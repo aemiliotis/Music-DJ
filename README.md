@@ -1,3 +1,3 @@
 # Music-DJ
 
-https://aemiliotis.github.io/music-dj/
+https://aemiliotis.github.io/Music-DJ/

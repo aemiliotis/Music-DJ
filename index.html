@@ -1,0 +1,1907 @@
+<!DOCTYPE html>
+<html lang="el">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>LogicTech | Music DJ</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Rajdhani:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --orange: #ff8c42; --orange-dim: rgba(255,140,66,0.18); --orange-glow: rgba(255,140,66,0.5);
+            --bg-dark: #080c14; --surface: rgba(8,12,22,0.92); --surface-light: rgba(18,26,42,0.95);
+            --border: rgba(255,140,66,0.22); --text: #e8ddd0; --text-dim: rgba(232,221,208,0.5);
+            --font-mono: 'Space Mono', monospace; --font-ui: 'Rajdhani', sans-serif;
+            --bg: #0a0e1a; --accent: #ff8c42; --success: #88ffaa; --warn: #ff66ff; --lineSnap: #ffaa88;
+            --selected: #66ccff; --selected-dim: rgba(102,204,255,0.2);
+            --groupColor: #aa88ff; --groupDim: rgba(170,136,255,0.2);
+            --header-h: 72px;
+            --footer-h: 130px;
+            --float-h: 92px;
+            --float-top: 84px;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; -webkit-tap-highlight-color: transparent; }
+        body { font-family: var(--font-ui); background: var(--bg); color: var(--text); overflow: hidden; height: 100vh; width: 100%; position: fixed; touch-action: none; }
+
+        .header { background: rgba(5,8,16,0.95); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); padding: 12px 24px; position: fixed; top: 0; left: 0; right: 0; z-index: 100; }
+        .header-content { max-width: 1400px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+        .logo-link { display: flex; align-items: center; gap: 12px; text-decoration: none; transition: transform .2s, filter .2s; position: relative; }
+        .logo-link:hover { transform: scale(1.02); filter: drop-shadow(0 0 8px var(--orange-glow)); }
+        .logo-img { height: 48px; width: auto; display: block; }
+        .logo-text h1 { font-family: var(--font-ui); font-size: 20px; font-weight: 700; color: var(--orange); letter-spacing: 1px; line-height: 1.2; }
+        .logo-text p { font-family: var(--font-mono); font-size: 9px; color: var(--text-dim); letter-spacing: 2px; text-transform: uppercase; }
+        .logo-link::before { content: "* LOGICTECH\A \~ Music DJ | escape room audio\A @ logictech.neocities.org\A > logictechgreece@gmail.com\A T 694 771 4420"; position: absolute; bottom: -98px; left: 50%; transform: translateX(-50%); background: var(--surface-light); backdrop-filter: blur(16px); border-radius: 12px; padding: 8px 14px; font-family: var(--font-mono); font-size: 9px; line-height: 1.45; color: var(--orange); white-space: pre; pointer-events: none; opacity: 0; transition: opacity .2s; z-index: 200; border: 1px solid var(--orange); box-shadow: 0 6px 16px rgba(0,0,0,0.3); text-align: left; }
+        .logo-link:hover::before { opacity: 1; }
+
+        .floating-controls {
+            position: fixed;
+            top: var(--float-top);
+            left: 20px;
+            z-index: 150;
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            gap: 8px;
+            max-width: calc(100vw - 100px);
+        }
+        .floating-panel { background: var(--surface-light); backdrop-filter: blur(12px); border: 1px solid var(--border); border-radius: 30px; padding: 6px 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 8px; }
+        .floating-panel label { color: var(--text-dim); font-size: 10px; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+        .floating-panel select { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,140,66,0.3); border-radius: 20px; color: var(--orange); font-family: var(--font-mono); font-size: 12px; padding: 4px 10px; outline: none; cursor: pointer; }
+        .floating-panel select:focus { border-color: var(--orange); }
+        .btn-sm { background: transparent; border: none; color: var(--text-dim); cursor: pointer; font-size: 14px; padding: 2px 8px; border-radius: 12px; transition: all 0.15s; font-weight: bold; }
+        .btn-sm:hover { background: var(--orange-dim); color: var(--orange); }
+        .btn-sm:active { transform: scale(0.9); }
+        .btn-sm.primary { background: var(--orange); color: #0a0e1a; padding: 4px 14px; font-size: 12px; border-radius: 20px; }
+        .btn-sm.primary:hover { filter: brightness(1.1); }
+        .btn-sm.danger { color: #ff8888; }
+        .btn-sm.danger:hover { background: rgba(255,80,80,0.2); }
+
+        .home-panel {
+            background: var(--surface-light);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            padding: 6px 14px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            transition: border-color 0.2s;
+        }
+        .home-panel.set { border-color: rgba(136,255,170,0.5); }
+        .home-panel .hp-icon { font-size: 16px; }
+        .home-panel .hp-info { display: flex; flex-direction: column; gap: 1px; }
+        .home-panel .hp-label { font-size: 8px; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.6px; }
+        .home-panel .hp-name { color: var(--success); font-weight: bold; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .home-panel .hp-name.empty { color: var(--text-dim); font-style: italic; font-weight: normal; }
+        .home-panel button {
+            background: var(--orange);
+            color: #0a0e1a;
+            border: none;
+            padding: 5px 12px;
+            border-radius: 16px;
+            font-family: var(--font-ui);
+            font-weight: 700;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .home-panel button:hover { filter: brightness(1.1); }
+
+        .help-btn { position: fixed; top: var(--float-top); right: 20px; z-index: 150; background: var(--surface-light); backdrop-filter: blur(12px); border: 1px solid var(--orange); border-radius: 50%; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 22px; color: var(--orange); box-shadow: 0 4px 16px rgba(0,0,0,0.3); transition: all 0.15s; }
+        .help-btn:hover { background: var(--orange); color: #0a0e1a; transform: scale(1.05); }
+        .help-btn:active { transform: scale(0.95); }
+
+        .steps-scroll {
+            position: fixed;
+            top: calc(var(--float-top) + var(--float-h));
+            bottom: var(--footer-h);
+            left: 0; right: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding: 20px;
+            z-index: 1;
+        }
+        .steps-container { display: flex; flex-direction: column; gap: 20px; max-width: 1400px; margin: 0 auto; }
+
+        .step {
+            background: var(--surface-light);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 14px 18px 16px;
+            box-shadow: 0 6px 24px rgba(0,0,0,0.35);
+            transition: border-color 0.2s, box-shadow 0.2s;
+            position: relative;
+        }
+        .step.active-step { border-color: var(--orange); box-shadow: 0 0 24px rgba(255,140,66,0.35), 0 6px 24px rgba(0,0,0,0.35); }
+        .step.playing-step { border-color: var(--success); box-shadow: 0 0 24px rgba(136,255,170,0.35), 0 6px 24px rgba(0,0,0,0.35); }
+
+        .step-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px dashed var(--border); }
+        .step-title { display: flex; align-items: center; gap: 10px; font-family: var(--font-ui); font-weight: 700; color: var(--orange); font-size: 16px; letter-spacing: 0.5px; }
+        .step-badge { background: rgba(255,140,66,0.15); border: 1px solid var(--orange); border-radius: 50px; padding: 2px 10px; font-size: 10px; font-family: var(--font-mono); color: var(--orange); font-weight: 400; letter-spacing: 0.5px; }
+
+        .step-controls { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+        .mode-toggle { display: flex; background: rgba(255,255,255,0.05); border-radius: 24px; padding: 2px; border: 1px solid var(--border); }
+        .mode-toggle button { background: transparent; border: none; color: var(--text-dim); font-family: var(--font-ui); font-weight: 600; font-size: 10px; padding: 5px 12px; border-radius: 20px; cursor: pointer; transition: all 0.15s; text-transform: uppercase; letter-spacing: 0.5px; }
+        .mode-toggle button.active { background: var(--orange); color: #0a0e1a; }
+        .mode-toggle button:not(.active):hover { color: var(--orange); }
+
+        .step-btn { background: rgba(255,255,255,0.06); border: 1px solid var(--border); color: var(--text); font-family: var(--font-ui); font-weight: 600; font-size: 10px; padding: 6px 12px; border-radius: 20px; cursor: pointer; transition: all 0.15s; text-transform: uppercase; letter-spacing: 0.4px; }
+        .step-btn:hover { background: var(--orange-dim); border-color: var(--orange); color: var(--orange); }
+        .step-btn:active { transform: scale(0.95); }
+        .step-btn.danger { color: #ff8888; }
+        .step-btn.danger:hover { background: rgba(255,80,80,0.15); border-color: #ff5555; color: #ff8888; }
+
+        .files-flow { display: flex; flex-wrap: wrap; gap: 10px; align-items: stretch; }
+        .file-box {
+            background: rgba(8,12,22,0.75);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 10px 14px;
+            min-width: 180px;
+            max-width: 280px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+            transition: all 0.15s;
+            gap: 4px;
+        }
+        .file-box:hover { background: rgba(255,140,66,0.08); border-color: var(--orange); transform: translateY(-2px); }
+        .file-box.playing { border-color: var(--success); background: rgba(136,255,170,0.08); box-shadow: 0 0 16px rgba(136,255,170,0.3); }
+        .file-box.missing { border-style: dashed; border-color: rgba(255,80,80,0.4); }
+        .file-box .file-icon { font-size: 18px; }
+        .file-box .file-name { font-family: var(--font-mono); font-size: 11px; color: var(--text); text-align: center; word-break: break-word; line-height: 1.3; max-width: 100%; }
+        .file-box.playing .file-name { color: var(--success); }
+        .file-box .file-path { font-family: var(--font-mono); font-size: 9px; color: var(--success); text-align: center; word-break: break-all; line-height: 1.3; max-width: 100%; margin-top: 2px; }
+        .file-box .file-meta { font-family: var(--font-mono); font-size: 9px; color: var(--text-dim); letter-spacing: 0.5px; text-transform: uppercase; }
+        .file-box .remove-file {
+            position: absolute; top: -8px; right: -8px;
+            background: #b14e6b; color: #fff; border: 2px solid var(--bg-dark);
+            border-radius: 50%; width: 22px; height: 22px; font-size: 12px; line-height: 1;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; opacity: 0.7; transition: 0.15s; font-weight: bold;
+        }
+        .file-box .remove-file:hover { opacity: 1; background: #d45f7f; transform: scale(1.15); }
+
+        .add-file-btn {
+            background: rgba(255,140,66,0.05);
+            border: 1px dashed rgba(255,140,66,0.4);
+            color: var(--orange);
+            border-radius: 12px;
+            padding: 10px 18px;
+            font-family: var(--font-ui); font-weight: 600; font-size: 11px;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            cursor: pointer; transition: all 0.15s;
+            display: flex; align-items: center; gap: 6px;
+            min-height: 72px;
+        }
+        .add-file-btn:hover { background: rgba(255,140,66,0.12); border-color: var(--orange); }
+        .add-file-btn:active { transform: scale(0.96); }
+        .add-file-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+        .add-file-btn:disabled:hover { background: rgba(255,140,66,0.05); border-color: rgba(255,140,66,0.4); transform: none; }
+
+        .empty-msg { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); font-style: italic; padding: 8px 0; }
+
+        .footer-panel { position: fixed; bottom: 0; left: 0; right: 0; background: var(--surface); backdrop-filter: blur(16px); border-top: 1px solid var(--border); z-index: 150; padding: 12px 16px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 -4px 20px rgba(0,0,0,0.3); }
+        .stats-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; font-family: var(--font-mono); font-size: 10px; }
+        .stat-item { display: flex; align-items: center; gap: 4px; background: rgba(255,255,255,0.05); padding: 4px 10px; border-radius: 20px; border-left: 2px solid var(--orange); }
+        .stat-item span { color: var(--orange); font-weight: bold; }
+        .stat-item .unit { color: #aaa; font-size: 9px; margin-left: 2px; }
+        .status-badge { background: linear-gradient(135deg, #2a4a3a, #1e3a2a); padding: 4px 12px; border-radius: 20px; font-size: 9px; color: var(--success); font-family: var(--font-mono); border: 1px solid rgba(136,255,170,0.3); display: flex; align-items: center; gap: 4px; }
+        .status-badge.playing { background: linear-gradient(135deg, #4a3a2a, #3a2a1a); color: var(--orange); border-color: rgba(255,140,66,0.4); }
+        .status-badge.warn { background: linear-gradient(135deg, #4a2a3a, #3a1a2a); color: #ff8888; border-color: rgba(255,80,80,0.4); }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.05);
+            padding: 4px 12px;
+            border-radius: 20px;
+            border-left: 2px solid var(--orange);
+            font-family: var(--font-mono);
+            font-size: 10px;
+        }
+        .volume-control label { color: var(--text-dim); font-size: 10px; letter-spacing: 0.5px; cursor: pointer; display: flex; align-items: center; gap: 3px; }
+        .volume-control input[type="range"] { width: 90px; accent-color: var(--orange); cursor: pointer; height: 4px; }
+        .volume-control .vol-val { color: var(--orange); font-weight: bold; min-width: 30px; text-align: right; font-size: 11px; }
+        .volume-control .mute-btn { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 14px; padding: 0 2px; transition: all 0.15s; line-height: 1; }
+        .volume-control .mute-btn:hover { color: var(--orange); transform: scale(1.1); }
+        .volume-control .mute-btn.muted { color: #ff8888; }
+
+        .tools-row { display: flex; justify-content: center; align-items: center; flex-wrap: wrap; gap: 6px; }
+        .tool-btn { background: rgba(255,255,255,0.08); border: none; padding: 6px 12px; border-radius: 20px; color: var(--text); cursor: pointer; font-size: 10px; font-family: var(--font-ui); font-weight: 600; transition: all 0.15s; display: flex; align-items: center; gap: 4px; text-transform: uppercase; letter-spacing: 0.4px; }
+        .tool-btn:hover { background: var(--orange-dim); color: var(--orange); }
+        .tool-btn.active { background: var(--orange); color: #0a0e1a; }
+        .tool-btn:active { transform: scale(0.95); }
+        .tool-btn:disabled { opacity: 0.35; pointer-events: none; }
+        .tool-btn.danger { color: #ff8888; }
+        .tool-btn.danger:hover { background: rgba(255,80,80,0.15); color: #ff8888; }
+        .divider { width: 1px; height: 24px; background: var(--border); margin: 0 4px; }
+
+        .toast { position: fixed; bottom: calc(var(--footer-h) + 20px); left: 50%; transform: translateX(-50%) translateY(10px); background: var(--orange); color: #0a0e1a; padding: 10px 22px; border-radius: 40px; font-size: 12px; font-weight: bold; z-index: 200; transition: opacity .2s, transform .2s; pointer-events: none; white-space: nowrap; font-family: var(--font-mono); opacity: 0; }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 240;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-overlay.visible { display: flex; }
+        #overlay.modal-overlay { background: rgba(0,0,0,0.55); z-index: 239; }
+
+        .modal-box {
+            background: var(--surface-light);
+            border: 2px solid var(--orange);
+            border-radius: 16px;
+            padding: 22px;
+            z-index: 250;
+            width: 100%;
+            max-width: 540px;
+            max-height: 88vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            animation: modalIn 0.2s ease-out;
+        }
+        @keyframes modalIn { from { transform: scale(0.94); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal-box h3 { color: var(--orange); margin-bottom: 14px; font-size: 16px; font-family: var(--font-ui); font-weight: 700; display: flex; align-items: center; gap: 8px; letter-spacing: 0.5px; }
+        .modal-box p { color: var(--text-dim); font-size: 12px; margin-bottom: 12px; line-height: 1.5; font-family: var(--font-ui); }
+        .modal-box .actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+        .modal-box .btn { flex: 1; padding: 10px 14px; border: none; border-radius: 10px; font-family: var(--font-ui); font-weight: 600; cursor: pointer; transition: all 0.15s; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; min-width: 100px; }
+        .modal-box .btn-primary { background: var(--orange); color: #0a0e1a; }
+        .modal-box .btn-primary:hover { filter: brightness(1.1); }
+        .modal-box .btn-secondary { background: rgba(255,255,255,0.1); color: var(--text); }
+        .modal-box .btn-secondary:hover { background: rgba(255,255,255,0.2); }
+        .modal-box .btn-cancel { background: rgba(255,80,80,0.2); color: #ff8888; }
+        .modal-box .btn-cancel:hover { background: rgba(255,80,80,0.35); }
+        .modal-box .btn:active { transform: scale(0.96); }
+
+        .picker-folder {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(136,255,170,0.08);
+            border: 1px solid rgba(136,255,170,0.35);
+            border-radius: 10px;
+            padding: 10px 14px;
+            margin-bottom: 12px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--success);
+        }
+        .picker-folder .pf-label { color: var(--text-dim); font-size: 9px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .picker-folder .pf-name { color: var(--success); font-weight: bold; }
+        .picker-toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .picker-toolbar .pick-counter { font-family: var(--font-mono); font-size: 11px; color: var(--text-dim); }
+        .picker-toolbar .pick-counter strong { color: var(--orange); }
+        .picker-toolbar button {
+            background: rgba(255,255,255,0.08);
+            border: 1px solid var(--border);
+            color: var(--text);
+            font-family: var(--font-ui);
+            font-weight: 600;
+            font-size: 10px;
+            padding: 4px 10px;
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+        }
+        .picker-toolbar button:hover { background: var(--orange-dim); color: var(--orange); border-color: var(--orange); }
+        .picker-list {
+            background: rgba(0,0,0,0.35);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 6px;
+            max-height: 280px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+        }
+        .picker-group {
+            font-family: var(--font-mono);
+            font-size: 10px;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            padding: 6px 10px 4px;
+            border-bottom: 1px dashed rgba(255,255,255,0.06);
+            margin-top: 4px;
+        }
+        .picker-group:first-child { margin-top: 0; }
+        .picker-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background 0.12s;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text);
+        }
+        .picker-item:hover { background: rgba(255,140,66,0.08); }
+        .picker-item.checked { background: rgba(255,140,66,0.15); }
+        .picker-item .pi-check {
+            width: 18px;
+            height: 18px;
+            border-radius: 5px;
+            border: 1.5px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            font-size: 12px;
+            color: transparent;
+            background: rgba(255,255,255,0.04);
+            transition: all 0.12s;
+        }
+        .picker-item.checked .pi-check {
+            background: var(--orange);
+            border-color: var(--orange);
+            color: #0a0e1a;
+        }
+        .picker-item .pi-name {
+            flex: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        .picker-item .pi-size {
+            color: var(--text-dim);
+            font-size: 10px;
+            flex-shrink: 0;
+        }
+        .picker-empty {
+            text-align: center;
+            color: var(--text-dim);
+            font-family: var(--font-mono);
+            font-size: 11px;
+            padding: 24px 12px;
+            font-style: italic;
+        }
+
+        .wizard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px dashed var(--border); }
+        .wizard-progress { font-family: var(--font-mono); font-size: 10px; color: var(--text-dim); letter-spacing: 0.5px; }
+        .wizard-progress strong { color: var(--orange); font-size: 14px; }
+
+        .wizard-list {
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 6px;
+            max-height: 340px;
+            overflow-y: auto;
+            margin-bottom: 12px;
+        }
+        .wizard-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 10px;
+            border-radius: 8px;
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            line-height: 1.4;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+        .wizard-row:last-child { border-bottom: none; }
+        .wizard-row.done { color: var(--success); }
+        .wizard-row.done .wr-info { opacity: 0.55; }
+        .wizard-row.done .wr-info .wr-name { text-decoration: line-through; }
+        .wizard-row .wr-num {
+            flex-shrink: 0;
+            width: 22px;
+            text-align: right;
+            color: var(--text-dim);
+            font-size: 10px;
+        }
+        .wizard-row .wr-info {
+            flex: 1;
+            min-width: 0;
+            overflow: hidden;
+        }
+        .wizard-row .wr-folder {
+            color: var(--success);
+            font-size: 10px;
+            word-break: break-all;
+            line-height: 1.3;
+        }
+        .wizard-row .wr-name {
+            color: var(--text);
+            font-size: 12px;
+            font-weight: bold;
+            word-break: break-all;
+            line-height: 1.3;
+            margin-top: 2px;
+        }
+        .wizard-row.done .wr-name { color: var(--success); }
+        .wizard-row .wr-status {
+            flex-shrink: 0;
+            font-size: 10px;
+            color: var(--text-dim);
+            text-align: right;
+            padding-left: 6px;
+        }
+
+        .wizard-note { background: rgba(102,204,255,0.08); border-left: 3px solid var(--selected); padding: 8px 12px; border-radius: 4px; font-size: 11px; line-height: 1.5; font-family: var(--font-ui); color: var(--text); margin-bottom: 12px; }
+
+        .help-section { margin-bottom: 18px; }
+        .help-section h4 { color: var(--accent); font-size: 13px; margin-bottom: 10px; border-bottom: 1px solid var(--border); padding-bottom: 5px; font-family: var(--font-ui); text-transform: uppercase; letter-spacing: 0.6px; }
+        .help-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+        .help-item { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
+        .help-key { background: rgba(255,140,66,0.15); border: 1px solid var(--orange); border-radius: 6px; padding: 2px 8px; font-family: var(--font-mono); font-size: 10px; color: var(--orange); min-width: 60px; text-align: center; }
+        .help-desc { font-size: 11px; color: var(--text); font-family: var(--font-ui); }
+        .help-note { background: rgba(102,204,255,0.08); border-left: 3px solid var(--selected); padding: 10px 12px; border-radius: 4px; margin-top: 12px; font-size: 11px; line-height: 1.6; font-family: var(--font-ui); }
+
+        .loading-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--bg-dark); display: flex; align-items: center; justify-content: center; z-index: 1000; font-family: var(--font-mono); color: var(--orange); flex-direction: column; gap: 16px; }
+        .loading-spinner { width: 40px; height: 40px; border: 3px solid var(--orange-dim); border-top-color: var(--orange); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .hidden { display: none !important; }
+
+        /* ============================================================
+           EMAIL MODAL — matched to original
+           ============================================================ */
+        .email-modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(12px);
+            display: flex; align-items: center; justify-content: center;
+            z-index: 9999; padding: 20px;
+            animation: fadeIn 0.3s ease-out;
+        }
+        .email-modal-overlay.closing {
+            animation: fadeOut 0.2s ease-in forwards;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }
+
+        .email-modal-box {
+            background: var(--surface-light);
+            border: 2px solid var(--orange);
+            border-radius: 20px;
+            padding: 30px 25px 25px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+            text-align: center;
+            position: relative;
+            animation: slideUp 0.3s ease-out;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .email-modal-close {
+            position: absolute; top: 12px; right: 18px;
+            background: none; border: none;
+            color: var(--text-dim); font-size: 26px;
+            cursor: pointer; transition: all 0.15s;
+            line-height: 1;
+            z-index: 10;
+        }
+        .email-modal-close:hover { color: var(--orange); transform: scale(1.1); }
+
+        .email-modal-box .logo-icon {
+            font-size: 38px; margin-bottom: 4px;
+        }
+        .email-modal-box h2 {
+            font-family: var(--font-ui);
+            font-size: 18px; font-weight: 700;
+            color: var(--orange);
+            margin-bottom: 4px;
+        }
+        .email-modal-box .subtitle {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-bottom: 14px;
+            line-height: 1.5;
+        }
+        .email-modal-box .iframe-wrapper {
+            width: 100%;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            background: #fff;
+            margin-top: 6px;
+        }
+        .email-modal-box .iframe-wrapper iframe {
+            width: 100%;
+            height: 420px;
+            border: none;
+            display: block;
+        }
+        .email-modal-box .skip-text {
+            display: block;
+            margin-top: 14px;
+            font-size: 11px;
+            color: var(--text-dim);
+            cursor: pointer;
+            transition: color 0.15s;
+            font-family: var(--font-ui);
+            text-decoration: none;
+        }
+        .email-modal-box .skip-text:hover {
+            color: var(--text);
+        }
+        .email-modal-box .lock-icon {
+            font-size: 11px;
+            color: var(--text-dim);
+            margin-top: 8px;
+        }
+
+        @media (max-width: 600px) {
+            .email-modal-box {
+                padding: 20px 16px;
+                max-width: 100%;
+                margin: 10px;
+            }
+            .email-modal-box .iframe-wrapper iframe {
+                height: 420px;
+            }
+            .email-modal-box h2 {
+                font-size: 16px;
+            }
+        }
+
+        @media (max-width: 900px) {
+            :root { --header-h: 62px; --footer-h: 150px; --float-h: 130px; --float-top: 72px; }
+            .help-grid { grid-template-columns: 1fr; }
+            .header { padding: 10px 16px; }
+            .logo-img { height: 38px; }
+            .logo-text h1 { font-size: 16px; }
+            .logo-text p { font-size: 8px; }
+            .logo-link::before { display: none; }
+            .footer-panel { padding: 10px 12px; }
+            .stats-row { font-size: 9px; }
+            .stat-item { padding: 3px 8px; }
+            .tool-btn { padding: 5px 9px; font-size: 9px; }
+            .toast { bottom: calc(var(--footer-h) + 12px); font-size: 11px; padding: 8px 18px; }
+            .floating-controls { top: var(--float-top); left: 10px; right: 60px; max-width: none; gap: 6px; }
+            .floating-panel { padding: 4px 8px; gap: 6px; }
+            .floating-panel label { font-size: 9px; }
+            .floating-panel select { font-size: 11px; padding: 3px 8px; }
+            .btn-sm.primary { padding: 3px 10px; font-size: 11px; }
+            #fadeRange { width: 70px; }
+            #fadeValue { font-size: 10px; min-width: 30px; }
+            .help-btn { top: var(--float-top); right: 10px; width: 38px; height: 38px; font-size: 18px; }
+            .steps-scroll { padding: 12px; }
+            .step-header { gap: 8px; }
+            .step-title { font-size: 14px; }
+            .file-box { min-width: 150px; padding: 8px 10px; }
+            .file-box .file-name { font-size: 10px; }
+            .file-box .file-path { font-size: 8px; }
+            .volume-control input[type="range"] { width: 60px; }
+            .volume-control .vol-val { min-width: 26px; font-size: 10px; }
+            .home-panel { padding: 4px 10px; }
+            .home-panel .hp-name { max-width: 90px; }
+        }
+        @media (max-width: 480px) {
+            :root { --float-h: 160px; }
+            .floating-controls { right: 60px; }
+        }
+
+        .steps-scroll::-webkit-scrollbar, .modal-box::-webkit-scrollbar, .wizard-list::-webkit-scrollbar, .picker-list::-webkit-scrollbar { width: 8px; }
+        .steps-scroll::-webkit-scrollbar-track, .modal-box::-webkit-scrollbar-track, .wizard-list::-webkit-scrollbar-track, .picker-list::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px; }
+        .steps-scroll::-webkit-scrollbar-thumb, .modal-box::-webkit-scrollbar-thumb, .wizard-list::-webkit-scrollbar-thumb, .picker-list::-webkit-scrollbar-thumb { background: var(--orange-dim); border-radius: 4px; }
+        .steps-scroll::-webkit-scrollbar-thumb:hover, .modal-box::-webkit-scrollbar-thumb:hover, .wizard-list::-webkit-scrollbar-thumb:hover, .picker-list::-webkit-scrollbar-thumb:hover { background: var(--orange); }
+    </style>
+</head>
+<body>
+
+    <!-- ===== EMAIL MODAL — MATCHED TO ORIGINAL ===== -->
+    <div id="emailModal" class="email-modal-overlay">
+        <div class="email-modal-box">
+            <button class="email-modal-close" id="emailModalClose" aria-label="Close">×</button>
+            <div class="logo-icon">🎧</div>
+            <h2>Unlock Full Access</h2>
+            <p class="subtitle">Fill in your email below to use the <strong>Music DJ</strong> and get your escape room audio ready.</p>
+            <div class="iframe-wrapper">
+                <iframe src="https://docs.google.com/forms/d/e/1FAIpQLSdxzUUL-sA2lfMfyQOHNV_pvae-OliwSvKUBhVZ0N0cHdLE4g/viewform?embedded=true" frameborder="0" marginheight="0" marginwidth="0">Loading…</iframe>
+            </div>
+            <span class="skip-text" id="emailModalSkip">I just want to try it →</span>
+            <div class="lock-icon">🔒 Your email is safe</div>
+        </div>
+    </div>
+
+    <!-- ===== REST OF YOUR PAGE ===== -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-spinner"></div>
+        <div id="loadingText">Initializing Music DJ...</div>
+    </div>
+
+    <div class="header">
+        <div class="header-content">
+            <a href="https://logictech.neocities.org" target="_blank" class="logo-link">
+                <img src="https://logictech.neocities.org/logo.png" alt="LogicTech" class="logo-img" onerror="this.style.display='none'">
+                <div class="logo-text">
+                    <h1>Music DJ</h1>
+                    <p>escape room audio sequencer</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <div class="floating-controls">
+        <div class="home-panel" id="homePanel">
+            <span class="hp-icon">🏠</span>
+            <div class="hp-info">
+                <span class="hp-label">Home folder</span>
+                <span class="hp-name empty" id="homeName">not set</span>
+            </div>
+            <button id="homeSetBtn">Set Folder</button>
+        </div>
+        <div class="floating-panel">
+            <label>▶ from</label>
+            <select id="startStepSelect"></select>
+            <button class="btn-sm primary" id="playFromStartBtn" title="Play from selected step">▶ GO</button>
+        </div>
+        <div class="floating-panel">
+            <label>🎚 fade</label>
+            <input type="range" id="fadeRange" min="0" max="3000" step="100" value="800" style="width:90px; accent-color: var(--orange);">
+            <span id="fadeValue" style="color:var(--orange); font-family:var(--font-mono); font-size:11px; min-width:36px; text-align:right;">0.8s</span>
+        </div>
+    </div>
+
+    <button class="help-btn" id="helpBtn" title="Help / Manual">?</button>
+
+    <div class="steps-scroll">
+        <div id="stepsContainer" class="steps-container"></div>
+    </div>
+
+    <div class="footer-panel">
+        <div class="stats-row">
+            <div class="stat-item">🎵 Steps: <span id="stepCount">0</span></div>
+            <div class="stat-item">🎧 Files: <span id="fileCount">0</span></div>
+            <div class="stat-item">✅ Linked: <span id="linkedCount">0</span></div>
+            <div class="stat-item">▶ Now: <span id="nowPlaying" style="max-width:180px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">—</span></div>
+            <div class="volume-control">
+                <label for="volumeRange" id="volIcon">🔊</label>
+                <input type="range" id="volumeRange" min="0" max="100" step="1" value="100">
+                <span class="vol-val" id="volValue">100%</span>
+                <button class="mute-btn" id="volMuteBtn" title="Mute / Unmute">🔈</button>
+            </div>
+            <div class="status-badge" id="statusBadge">📐 Ready</div>
+        </div>
+        <div class="tools-row">
+            <button class="tool-btn" id="tool-add-step">➕ Add Step</button>
+            <div class="divider"></div>
+            <button class="tool-btn" id="tool-play">▶ Play</button>
+            <button class="tool-btn" id="tool-stop">⏹ Stop</button>
+            <button class="tool-btn" id="tool-next-mp3">⏭ Next MP3</button>
+            <button class="tool-btn" id="tool-next-step">⏩ Next Step</button>
+            <div class="divider"></div>
+            <button class="tool-btn" id="tool-save">💾 Save</button>
+            <button class="tool-btn" id="tool-load">📂 Load</button>
+            <button class="tool-btn" id="tool-reconnect" style="display:none;">🔗 Reconnect All</button>
+            <div class="divider"></div>
+            <button class="tool-btn danger" id="tool-clear">🗑 Clear All</button>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">READY</div>
+
+    <input type="file" id="fileInput" accept="audio/*" multiple style="display:none">
+    <input type="file" id="projectInput" accept=".lgt,application/octet-stream" style="display:none">
+
+    <div id="filePickerModal" class="modal-overlay">
+        <div class="modal-box" style="max-width: 640px;">
+            <h3>🎵 Select Audio Files</h3>
+            <div class="picker-folder">
+                <span class="pf-label">🏠 Home</span>
+                <span class="pf-name" id="pickerFolderName">—</span>
+            </div>
+            <div class="picker-toolbar">
+                <div class="pick-counter">Selected: <strong id="pickerCount">0</strong> of <strong id="pickerTotal">0</strong></div>
+                <div style="display:flex; gap:6px;">
+                    <button id="pickerSelectAll">Select All</button>
+                    <button id="pickerSelectNone">Select None</button>
+                </div>
+            </div>
+            <div class="picker-list" id="pickerList"></div>
+            <div class="actions">
+                <button class="btn btn-cancel" id="pickerCancelBtn">Cancel</button>
+                <button class="btn btn-primary" id="pickerAddBtn">＋ Add Selected</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="reconnectModal" class="modal-overlay">
+        <div class="modal-box" style="max-width: 640px;">
+            <h3>🔗 Reconnect Audio Files</h3>
+            <div class="wizard-header">
+                <div class="wizard-progress">✔ <strong id="wizMatched">0</strong> of <strong id="wizTotal">0</strong> linked</div>
+            </div>
+
+            <div class="wizard-note">
+                Pick the <strong>home folder</strong> you saved this project with. The app will walk it
+                recursively and relink every file using the relative paths stored in the .lgt file.
+            </div>
+
+            <div class="actions" style="margin-bottom: 8px;">
+                <button class="btn btn-primary" id="wizPickHomeBtn" style="width:100%;">📂 Pick Home Folder &amp; Relink All</button>
+            </div>
+
+            <div class="wizard-list" id="wizList"></div>
+
+            <div class="actions" style="margin-top: 4px;">
+                <button class="btn btn-secondary" id="wizCancelBtn" style="width:100%;">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="helpModal" class="modal-overlay">
+        <div class="modal-box" style="max-width: 580px;">
+            <h3>📖 Music DJ Manual</h3>
+            <div class="help-section">
+                <h4>🏠 Home folder system</h4>
+                <div class="help-note" style="margin-top:0">
+                    All audio must live inside a single <strong>home folder</strong>. Click
+                    <strong>Set Folder</strong> (top-left) once to pick it. Any subfolders
+                    inside it are fine — organize as you like.<br><br>
+                    The <strong>.lgt</strong> file stores paths <em>relative to the home folder</em>
+                    (e.g. <code>Halloween/scream.mp3</code>). To restore a project, just pick the
+                    same home folder again — <strong>one click relinks everything</strong>.
+                </div>
+            </div>
+            <div class="help-section">
+                <h4>🎵 How to use</h4>
+                <div class="help-grid">
+                    <div class="help-item"><span class="help-key">➕ Add Step</span><span class="help-desc">Create a new step</span></div>
+                    <div class="help-item"><span class="help-key">＋ add mp3</span><span class="help-desc">Browse home folder, tick files</span></div>
+                    <div class="help-item"><span class="help-key">Click file</span><span class="help-desc">Play it with fade in</span></div>
+                    <div class="help-item"><span class="help-key">loop each</span><span class="help-desc">Repeat same file</span></div>
+                    <div class="help-item"><span class="help-key">sequence</span><span class="help-desc">Play next in list</span></div>
+                    <div class="help-item"><span class="help-key">⏭ next mp3</span><span class="help-desc">Skip to next in step</span></div>
+                    <div class="help-item"><span class="help-key">⏩ next step</span><span class="help-desc">Skip to next step</span></div>
+                    <div class="help-item"><span class="help-key">▶ GO</span><span class="help-desc">Play from selected step</span></div>
+                </div>
+            </div>
+            <div class="help-section">
+                <h4>💾 Save / Load</h4>
+                <div class="help-grid">
+                    <div class="help-item"><span class="help-key">💾 Save</span><span class="help-desc">Save using last filename</span></div>
+                    <div class="help-item"><span class="help-key">📂 Load</span><span class="help-desc">Open a .lgt file</span></div>
+                    <div class="help-item"><span class="help-key">🔗 Reconnect All</span><span class="help-desc">Pick home folder → relink</span></div>
+                </div>
+                <div class="help-note" style="margin-top:8px">
+                    The first save uses <strong>project1.lgt</strong>. After that, <strong>Save</strong>
+                    reuses the last filename you saved or loaded.
+                </div>
+            </div>
+            <div class="actions">
+                <button class="btn btn-primary" id="helpCloseBtn">Got it!</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="overlay" class="modal-overlay"></div>
+
+    <script>
+    // ============================================================
+    // EMAIL MODAL SCRIPT — matched to original
+    // ============================================================
+    (function() {
+        var modal = document.getElementById('emailModal');
+        var closeBtn = document.getElementById('emailModalClose');
+        var skipBtn = document.getElementById('emailModalSkip');
+
+        // Show the modal always
+        modal.style.display = 'flex';
+
+        // If the user already submitted before, we still show it (per your request),
+        // but change the skip text to reflect the saved state.
+        if (localStorage.getItem('logictech_email_submitted') === 'true') {
+            skipBtn.textContent = "I've already submitted — continue →";
+        }
+
+        function closeModal() {
+            modal.classList.add('closing');
+            setTimeout(function() {
+                modal.style.display = 'none';
+                modal.classList.remove('closing');
+            }, 200);
+            localStorage.setItem('logictech_email_submitted', 'true');
+        }
+
+        closeBtn.addEventListener('click', closeModal);
+        skipBtn.addEventListener('click', closeModal);
+    })();
+    </script>
+
+    <script>
+    (function() {
+        'use strict';
+
+        let steps = [];
+        let currentStepIndex = -1;
+        let currentFileIndex = -1;
+        let isPlaying = false;
+        let currentAudio = null;
+        let fadeInterval = null;
+        let FADE_DURATION = 800;
+        const FADE_STEP_MS = 30;
+
+        let VOLUME = 1.0;
+        let lastNonZeroVolume = 1.0;
+        let isMuted = false;
+
+        let homeDirHandle = null;
+        let homeName = '';
+
+        // Last saved / loaded filename (without extension). Defaults to project1.
+        let lastFilename = 'project1';
+
+        const $ = id => document.getElementById(id);
+        const stepsContainer = $('stepsContainer');
+        const startStepSelect = $('startStepSelect');
+        const playFromStartBtn = $('playFromStartBtn');
+        const fadeRange = $('fadeRange');
+        const fadeValue = $('fadeValue');
+        const toastEl = $('toast');
+        const fileInput = $('fileInput');
+        const projectInput = $('projectInput');
+        const helpModal = $('helpModal');
+        const reconnectModal = $('reconnectModal');
+        const filePickerModal = $('filePickerModal');
+        const overlay = $('overlay');
+        const volumeRange = $('volumeRange');
+        const volValue = $('volValue');
+        const volMuteBtn = $('volMuteBtn');
+        const volIcon = $('volIcon');
+
+        let toastTimer = null;
+
+        // ============================================================
+        // UTILITIES
+        // ============================================================
+        function toast(msg) {
+            if (!toastEl) return;
+            toastEl.textContent = msg;
+            toastEl.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toastEl.classList.remove('show'), 2500);
+        }
+
+        function updateStatus(msg, mode) {
+            const b = $('statusBadge');
+            if (!b) return;
+            b.textContent = msg;
+            b.classList.remove('playing', 'warn');
+            if (mode === 'playing') b.classList.add('playing');
+            else if (mode === 'warn') b.classList.add('warn');
+        }
+
+        function formatBytes(n) {
+            if (!n && n !== 0) return '';
+            if (n < 1024) return n + ' B';
+            if (n < 1024 * 1024) return (n / 1024).toFixed(1) + ' KB';
+            return (n / 1024 / 1024).toFixed(2) + ' MB';
+        }
+
+        function isAudioName(name) {
+            return /\.(mp3|wav|ogg|oga|m4a|mp4|aac|flac|opus|webm)$/i.test(name || '');
+        }
+
+        // ============================================================
+        // VOLUME
+        // ============================================================
+        function applyVolumeToCurrentAudio() {
+            if (currentAudio) {
+                try { if (!fadeInterval) currentAudio.volume = VOLUME; } catch (e) {}
+            }
+        }
+
+        function updateVolumeUI() {
+            if (volumeRange) volumeRange.value = Math.round(VOLUME * 100);
+            if (volValue) volValue.textContent = Math.round(VOLUME * 100) + '%';
+            if (volMuteBtn) volMuteBtn.classList.toggle('muted', isMuted);
+            if (volIcon) volIcon.textContent = isMuted ? '🔇' : (VOLUME === 0 ? '🔇' : (VOLUME < 0.4 ? '🔉' : '🔊'));
+            if (volMuteBtn) volMuteBtn.textContent = isMuted ? '🔇' : '🔈';
+        }
+
+        function setVolume(v) {
+            v = Math.max(0, Math.min(1, v));
+            VOLUME = v;
+            if (v > 0) { lastNonZeroVolume = v; isMuted = false; }
+            else { isMuted = true; }
+            applyVolumeToCurrentAudio();
+            updateVolumeUI();
+        }
+
+        function toggleMute() {
+            if (isMuted || VOLUME === 0) setVolume(lastNonZeroVolume > 0 ? lastNonZeroVolume : 0.8);
+            else { lastNonZeroVolume = VOLUME; setVolume(0); }
+        }
+
+        // ============================================================
+        // AUDIO ENGINE
+        // ============================================================
+        function stopAudioWithFade(callback) {
+            if (fadeInterval) { clearInterval(fadeInterval); fadeInterval = null; }
+            if (currentAudio && !currentAudio.paused) {
+                let vol = currentAudio.volume;
+                const stepsCount = Math.max(1, FADE_DURATION / FADE_STEP_MS);
+                const dec = vol / stepsCount;
+                const audioRef = currentAudio;
+                if (FADE_DURATION <= 0) {
+                    try { audioRef.pause(); audioRef.currentTime = 0; } catch (e) {}
+                    currentAudio = null;
+                    if (callback) callback();
+                    return;
+                }
+                fadeInterval = setInterval(() => {
+                    if (currentAudio !== audioRef) {
+                        clearInterval(fadeInterval); fadeInterval = null;
+                        if (callback) callback();
+                        return;
+                    }
+                    vol = Math.max(0, vol - dec);
+                    try { audioRef.volume = vol; } catch (e) {}
+                    if (vol <= 0.01) {
+                        clearInterval(fadeInterval); fadeInterval = null;
+                        try { audioRef.pause(); audioRef.currentTime = 0; } catch (e) {}
+                        currentAudio = null;
+                        if (callback) callback();
+                    }
+                }, FADE_STEP_MS);
+            } else {
+                if (currentAudio) {
+                    try { currentAudio.pause(); currentAudio.currentTime = 0; } catch (e) {}
+                    currentAudio = null;
+                }
+                if (callback) callback();
+            }
+        }
+
+        function playAudioWithFade(audio) {
+            if (!audio) return;
+            if (currentAudio && currentAudio !== audio) {
+                try { currentAudio.pause(); currentAudio.currentTime = 0; } catch (e) {}
+            }
+            currentAudio = audio;
+            audio.volume = 0;
+            audio.play().catch(e => {
+                console.warn('play error:', e);
+                updateStatus('⚠ Play blocked: ' + e.message, 'warn');
+            });
+            if (fadeInterval) { clearInterval(fadeInterval); fadeInterval = null; }
+            if (FADE_DURATION <= 0) { audio.volume = VOLUME; return; }
+            const stepsCount = Math.max(1, FADE_DURATION / FADE_STEP_MS);
+            const inc = VOLUME / stepsCount;
+            const audioRef = audio;
+            fadeInterval = setInterval(() => {
+                if (currentAudio !== audioRef) { clearInterval(fadeInterval); fadeInterval = null; return; }
+                let v = audioRef.volume + inc;
+                if (v >= VOLUME) {
+                    try { audioRef.volume = VOLUME; } catch (e) {}
+                    clearInterval(fadeInterval); fadeInterval = null;
+                } else {
+                    try { audioRef.volume = v; } catch (e) {}
+                }
+            }, FADE_STEP_MS);
+        }
+
+        function stopAll() {
+            stopAudioWithFade(() => {
+                isPlaying = false;
+                currentStepIndex = -1;
+                currentFileIndex = -1;
+                $('nowPlaying').textContent = '—';
+                updateStatus('⏹ Stopped');
+                render();
+            });
+        }
+
+        function playFileFromStep(stepIdx, fileIdx) {
+            const step = steps[stepIdx];
+            if (!step || !step.files || step.files.length === 0) { toast('⚠ No files in step'); return; }
+            if (fileIdx >= step.files.length) fileIdx = 0;
+            if (fileIdx < 0) fileIdx = 0;
+
+            const f = step.files[fileIdx];
+            if (!f.url) {
+                toast('⚠ Not linked yet: ' + (f.filename || f.name));
+                return;
+            }
+
+            stopAudioWithFade(() => {
+                const audio = new Audio(f.url);
+                audio.volume = 0;
+                currentStepIndex = stepIdx;
+                currentFileIndex = fileIdx;
+                isPlaying = true;
+
+                audio.addEventListener('ended', () => {
+                    if (!isPlaying) return;
+                    if (currentAudio !== audio) return;
+                    handleFileEnded();
+                });
+
+                audio.addEventListener('error', () => {
+                    const err = audio.error;
+                    const codes = {1:'ABORTED',2:'NETWORK',3:'DECODE',4:'SRC_NOT_SUPPORTED'};
+                    const msg = err ? (codes[err.code] || 'ERR' + err.code) : 'unknown';
+                    updateStatus('⚠ Audio error: ' + msg, 'warn');
+                });
+
+                playAudioWithFade(audio);
+                $('nowPlaying').textContent = f.name;
+                updateStatus('▶ Playing: ' + f.name, 'playing');
+                render();
+            });
+        }
+
+        function handleFileEnded() {
+            const step = steps[currentStepIndex];
+            if (!step) return;
+            if (step.mode === 'loop') {
+                playFileFromStep(currentStepIndex, currentFileIndex);
+            } else {
+                const nextIdx = currentFileIndex + 1;
+                if (nextIdx < step.files.length) {
+                    playFileFromStep(currentStepIndex, nextIdx);
+                } else {
+                    const nextStepIdx = currentStepIndex + 1;
+                    if (nextStepIdx < steps.length) {
+                        if (steps[nextStepIdx].files.length > 0) {
+                            playFileFromStep(nextStepIdx, 0);
+                        } else {
+                            let found = false;
+                            for (let i = nextStepIdx + 1; i < steps.length; i++) {
+                                if (steps[i].files.length > 0) { playFileFromStep(i, 0); found = true; break; }
+                            }
+                            if (!found) stopAll();
+                        }
+                    } else stopAll();
+                }
+            }
+        }
+
+        function playNextMp3() {
+            if (currentStepIndex < 0) { toast('ℹ Nothing playing'); return; }
+            const step = steps[currentStepIndex];
+            if (!step || step.files.length === 0) return;
+            const nextIdx = (currentFileIndex + 1) % step.files.length;
+            playFileFromStep(currentStepIndex, nextIdx);
+        }
+
+        function playNextStep() {
+            if (currentStepIndex < 0) { if (steps.length > 0) playFileFromStep(0, 0); return; }
+            if (currentStepIndex + 1 < steps.length) {
+                if (steps[currentStepIndex + 1].files.length > 0) {
+                    playFileFromStep(currentStepIndex + 1, 0);
+                } else {
+                    for (let i = currentStepIndex + 2; i < steps.length; i++) {
+                        if (steps[i].files.length > 0) { playFileFromStep(i, 0); return; }
+                    }
+                    stopAll();
+                }
+            } else {
+                if (steps.length > 0 && steps[0].files.length > 0) playFileFromStep(0, 0);
+                else stopAll();
+            }
+        }
+
+        // ============================================================
+        // HOME FOLDER
+        // ============================================================
+        function updateHomeUI() {
+            const nm = $('homeName');
+            const panel = $('homePanel');
+            const btn = $('homeSetBtn');
+            if (!nm) return;
+            if (homeDirHandle && homeName) {
+                nm.textContent = homeName;
+                nm.classList.remove('empty');
+                if (panel) panel.classList.add('set');
+                if (btn) btn.textContent = 'Change';
+            } else {
+                nm.textContent = 'not set';
+                nm.classList.add('empty');
+                if (panel) panel.classList.remove('set');
+                if (btn) btn.textContent = 'Set Folder';
+            }
+        }
+
+        async function pickHomeFolder() {
+            if (typeof window.showDirectoryPicker !== 'function') {
+                toast('❌ Folder picker not supported in this browser');
+                return;
+            }
+            try {
+                const handle = await window.showDirectoryPicker({ mode: 'read' });
+                homeDirHandle = handle;
+                homeName = handle.name || '';
+                updateHomeUI();
+                render();
+                toast('🏠 Home folder: ' + homeName);
+                const missing = steps.some(s => s.files.some(f => !f.url));
+                if (missing) {
+                    setTimeout(() => relinkAllFromHomeWithProgress(), 200);
+                }
+            } catch (err) {
+                if (err.name === 'AbortError') return;
+                console.warn('Home folder pick failed:', err);
+                toast('❌ ' + (err.message || 'Folder pick failed'));
+            }
+        }
+
+        // ============================================================
+        // FILE BROWSER
+        // ============================================================
+        async function collectAudioFromHome() {
+            const out = [];
+            if (!homeDirHandle) return out;
+            async function walk(dirHandle, prefix) {
+                for await (const entry of dirHandle.values()) {
+                    if (entry.kind === 'file') {
+                        if (!isAudioName(entry.name)) continue;
+                        try {
+                            const file = await entry.getFile();
+                            out.push({
+                                relPath: prefix ? (prefix + '/' + entry.name) : entry.name,
+                                name: entry.name,
+                                size: file.size,
+                                file: file,
+                                checked: false
+                            });
+                        } catch (e) { /* skip */ }
+                    } else if (entry.kind === 'directory') {
+                        try {
+                            await walk(entry, prefix ? (prefix + '/' + entry.name) : entry.name);
+                        } catch (e) { /* skip */ }
+                    }
+                }
+            }
+            await walk(homeDirHandle, '');
+            return out;
+        }
+
+        async function getFileByRelativePath(relPath) {
+            if (!homeDirHandle) return null;
+            const parts = relPath.split('/').filter(Boolean);
+            if (parts.length === 0) return null;
+            let cur = homeDirHandle;
+            for (let i = 0; i < parts.length - 1; i++) {
+                try {
+                    cur = await cur.getDirectoryHandle(parts[i], { create: false });
+                } catch (e) { return null; }
+            }
+            try {
+                const fh = await cur.getFileHandle(parts[parts.length - 1], { create: false });
+                return await fh.getFile();
+            } catch (e) { return null; }
+        }
+
+        // ============================================================
+        // RENDERING
+        // ============================================================
+        function render() {
+            renderSteps();
+            renderStartStepSelect();
+            renderStats();
+            updateReconnectBtn();
+            updateHomeUI();
+        }
+
+        function updateReconnectBtn() {
+            const anyMissing = steps.some(s => s.files.some(f => !f.url));
+            const btn = $('tool-reconnect');
+            if (btn) btn.style.display = anyMissing ? 'inline-flex' : 'none';
+        }
+
+        function renderSteps() {
+            if (!stepsContainer) return;
+            stepsContainer.innerHTML = '';
+
+            if (steps.length === 0) {
+                const empty = document.createElement('div');
+                empty.className = 'empty-msg';
+                empty.style.textAlign = 'center';
+                empty.style.padding = '40px 20px';
+                empty.style.fontSize = '13px';
+                empty.innerHTML = '🎵 No steps yet — click <strong style="color:var(--orange)">➕ Add Step</strong> below to begin';
+                stepsContainer.appendChild(empty);
+                return;
+            }
+
+            const hasHome = !!homeDirHandle;
+
+            steps.forEach((step, sIdx) => {
+                const el = document.createElement('div');
+                el.className = 'step';
+                if (sIdx === currentStepIndex && isPlaying) el.classList.add('playing-step');
+                else if (sIdx === currentStepIndex) el.classList.add('active-step');
+
+                const hdr = document.createElement('div');
+                hdr.className = 'step-header';
+
+                const title = document.createElement('div');
+                title.className = 'step-title';
+                title.innerHTML = `🎵 Step ${sIdx + 1} <span class="step-badge">${step.files.length} file${step.files.length === 1 ? '' : 's'}</span>`;
+
+                const ctrls = document.createElement('div');
+                ctrls.className = 'step-controls';
+
+                const modeTog = document.createElement('div');
+                modeTog.className = 'mode-toggle';
+                const loopBtn = document.createElement('button');
+                loopBtn.textContent = '🔁 loop';
+                loopBtn.className = step.mode === 'loop' ? 'active' : '';
+                loopBtn.onclick = (e) => { e.stopPropagation(); step.mode = 'loop'; render(); };
+                const seqBtn = document.createElement('button');
+                seqBtn.textContent = '➡ sequence';
+                seqBtn.className = step.mode === 'sequence' ? 'active' : '';
+                seqBtn.onclick = (e) => { e.stopPropagation(); step.mode = 'sequence'; render(); };
+                modeTog.appendChild(loopBtn);
+                modeTog.appendChild(seqBtn);
+                ctrls.appendChild(modeTog);
+
+                const nextMp3Btn = document.createElement('button');
+                nextMp3Btn.className = 'step-btn';
+                nextMp3Btn.textContent = '⏭ next mp3';
+                nextMp3Btn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (currentStepIndex !== sIdx) { if (step.files.length > 0) playFileFromStep(sIdx, 0); }
+                    else playNextMp3();
+                };
+                ctrls.appendChild(nextMp3Btn);
+
+                const nextStepBtn = document.createElement('button');
+                nextStepBtn.className = 'step-btn';
+                nextStepBtn.textContent = '⏩ next step';
+                nextStepBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    for (let i = sIdx + 1; i < steps.length; i++) {
+                        if (steps[i].files.length > 0) { playFileFromStep(i, 0); return; }
+                    }
+                    if (steps[0] && steps[0].files.length > 0) playFileFromStep(0, 0);
+                };
+                ctrls.appendChild(nextStepBtn);
+
+                const delBtn = document.createElement('button');
+                delBtn.className = 'step-btn danger';
+                delBtn.textContent = '🗑 delete';
+                delBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (steps.length <= 1) { toast('⚠ Cannot delete last step'); return; }
+                    steps.splice(sIdx, 1);
+                    if (currentStepIndex === sIdx) stopAll();
+                    else if (currentStepIndex > sIdx) currentStepIndex--;
+                    render();
+                    toast('🗑 Step deleted');
+                };
+                ctrls.appendChild(delBtn);
+
+                hdr.appendChild(title);
+                hdr.appendChild(ctrls);
+
+                const flow = document.createElement('div');
+                flow.className = 'files-flow';
+
+                if (step.files.length === 0) {
+                    const m = document.createElement('div');
+                    m.className = 'empty-msg';
+                    m.textContent = 'no files — add some below';
+                    flow.appendChild(m);
+                }
+
+                step.files.forEach((f, fIdx) => {
+                    const box = document.createElement('div');
+                    box.className = 'file-box';
+                    if (!f.url) box.classList.add('missing');
+                    if (isPlaying && currentStepIndex === sIdx && currentFileIndex === fIdx) box.classList.add('playing');
+
+                    const icon = document.createElement('div');
+                    icon.className = 'file-icon';
+                    icon.textContent = f.url ? '🎵' : '⚠';
+                    box.appendChild(icon);
+
+                    const nm = document.createElement('div');
+                    nm.className = 'file-name';
+                    nm.textContent = f.name.length > 26 ? f.name.slice(0, 24) + '…' : f.name;
+                    box.appendChild(nm);
+
+                    if (f.relPath) {
+                        const pathEl = document.createElement('div');
+                        pathEl.className = 'file-path';
+                        pathEl.title = f.relPath;
+                        const shortPath = f.relPath.length > 34 ? '…' + f.relPath.slice(-32) : f.relPath;
+                        pathEl.textContent = '🏠 ' + shortPath;
+                        box.appendChild(pathEl);
+                    }
+
+                    const meta = document.createElement('div');
+                    meta.className = 'file-meta';
+                    if (f.url) {
+                        meta.textContent = (isPlaying && currentStepIndex === sIdx && currentFileIndex === fIdx)
+                            ? '▶ playing' : '✔ linked';
+                    } else {
+                        meta.textContent = 'not linked';
+                    }
+                    box.appendChild(meta);
+
+                    const rm = document.createElement('button');
+                    rm.className = 'remove-file';
+                    rm.textContent = '×';
+                    rm.title = 'remove file';
+                    rm.onclick = (e) => {
+                        e.stopPropagation();
+                        step.files.splice(fIdx, 1);
+                        if (isPlaying && currentStepIndex === sIdx && currentFileIndex === fIdx) stopAll();
+                        else if (currentStepIndex === sIdx && currentFileIndex > fIdx) currentFileIndex--;
+                        render();
+                    };
+                    box.appendChild(rm);
+
+                    box.onclick = () => playFileFromStep(sIdx, fIdx);
+                    flow.appendChild(box);
+                });
+
+                const addBtn = document.createElement('button');
+                addBtn.className = 'add-file-btn';
+                if (!hasHome) {
+                    addBtn.disabled = true;
+                    addBtn.title = 'Set home folder first';
+                    addBtn.innerHTML = '🏠 set home folder first';
+                    addBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        pickHomeFolder();
+                    };
+                } else {
+                    addBtn.innerHTML = '＋ add mp3';
+                    addBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        startAddFilesToStep(sIdx);
+                    };
+                }
+                flow.appendChild(addBtn);
+
+                el.appendChild(hdr);
+                el.appendChild(flow);
+                stepsContainer.appendChild(el);
+            });
+        }
+
+        function renderStartStepSelect() {
+            if (!startStepSelect) return;
+            const prev = startStepSelect.value;
+            startStepSelect.innerHTML = '';
+            steps.forEach((s, i) => {
+                const o = document.createElement('option');
+                o.value = i;
+                o.textContent = `step ${i + 1} (${s.files.length})`;
+                startStepSelect.appendChild(o);
+            });
+            if (steps.length > 0) {
+                const desired = Math.min(parseInt(prev, 10) || 0, steps.length - 1);
+                startStepSelect.value = desired;
+            }
+        }
+
+        function renderStats() {
+            let totalFiles = 0;
+            let linkedFiles = 0;
+            for (const s of steps) {
+                totalFiles += s.files.length;
+                linkedFiles += s.files.filter(f => f.url).length;
+            }
+            $('stepCount').textContent = steps.length;
+            $('fileCount').textContent = totalFiles;
+            $('linkedCount').textContent = linkedFiles;
+        }
+
+        // ============================================================
+        // ADD FILES
+        // ============================================================
+        let pickerStepIdx = -1;
+        let pickerFiles = [];
+
+        async function startAddFilesToStep(stepIdx) {
+            if (!homeDirHandle) { toast('⚠ Set home folder first'); return; }
+            const step = steps[stepIdx];
+            if (!step) return;
+
+            pickerStepIdx = stepIdx;
+            $('pickerFolderName').textContent = homeName || '(home)';
+            $('pickerList').innerHTML = '<div class="picker-empty">⏳ Scanning home folder…</div>';
+            filePickerModal.classList.add('visible');
+            overlay.classList.add('visible');
+
+            const files = await collectAudioFromHome();
+            pickerFiles = files;
+            if (pickerFiles.length === 0) {
+                $('pickerList').innerHTML = '<div class="picker-empty">No audio files found in the home folder.</div>';
+                $('pickerCount').textContent = '0';
+                $('pickerTotal').textContent = '0';
+                return;
+            }
+            renderPickerList();
+        }
+
+        function closeFilePickerModal() {
+            filePickerModal.classList.remove('visible');
+            overlay.classList.remove('visible');
+            pickerStepIdx = -1;
+            pickerFiles = [];
+        }
+
+        function renderPickerList() {
+            const list = $('pickerList');
+            list.innerHTML = '';
+            let checked = 0;
+
+            const byFolder = new Map();
+            pickerFiles.forEach(f => {
+                const slash = f.relPath.lastIndexOf('/');
+                const folder = slash < 0 ? '' : f.relPath.slice(0, slash);
+                if (!byFolder.has(folder)) byFolder.set(folder, []);
+                byFolder.get(folder).push(f);
+            });
+
+            const sortedFolders = [...byFolder.keys()].sort();
+            sortedFolders.forEach(folder => {
+                const group = document.createElement('div');
+                group.className = 'picker-group';
+                group.textContent = folder ? ('📁 ' + folder) : '📁 (root)';
+                list.appendChild(group);
+
+                byFolder.get(folder).forEach(f => {
+                    if (f.checked) checked++;
+                    const item = document.createElement('div');
+                    item.className = 'picker-item' + (f.checked ? ' checked' : '');
+                    item.onclick = () => { f.checked = !f.checked; renderPickerList(); };
+                    const chk = document.createElement('div');
+                    chk.className = 'pi-check';
+                    chk.textContent = f.checked ? '✓' : '';
+                    const nm = document.createElement('div');
+                    nm.className = 'pi-name';
+                    nm.textContent = f.name;
+                    const sz = document.createElement('div');
+                    sz.className = 'pi-size';
+                    sz.textContent = formatBytes(f.size);
+                    item.appendChild(chk);
+                    item.appendChild(nm);
+                    item.appendChild(sz);
+                    list.appendChild(item);
+                });
+            });
+
+            $('pickerCount').textContent = checked;
+            $('pickerTotal').textContent = pickerFiles.length;
+        }
+
+        function confirmFilePicker() {
+            if (pickerStepIdx < 0) return;
+            const step = steps[pickerStepIdx];
+            if (!step) { closeFilePickerModal(); return; }
+
+            const selected = pickerFiles.filter(f => f.checked);
+            if (selected.length === 0) {
+                toast('⚠ Nothing selected — tick at least one file');
+                return;
+            }
+
+            let added = 0;
+            selected.forEach(item => {
+                step.files.push({
+                    name: item.name.replace(/\.[^/.]+$/, ''),
+                    relPath: item.relPath,
+                    filename: item.name,
+                    url: URL.createObjectURL(item.file),
+                    file: item.file
+                });
+                added++;
+            });
+
+            render();
+            closeFilePickerModal();
+            toast('✅ Added ' + added + ' file' + (added > 1 ? 's' : ''));
+        }
+
+        // ============================================================
+        // RELINK ALL
+        // ============================================================
+        async function relinkAllFromHomeWithProgress() {
+            if (!homeDirHandle) return;
+            const total = steps.reduce((a, s) => a + s.files.length, 0);
+            if (total === 0) { toast('ℹ Nothing to relink'); return; }
+            let done = 0, matched = 0;
+
+            for (const step of steps) {
+                for (const f of step.files) {
+                    if (f.url) { done++; continue; }
+                    if (!f.relPath) { done++; continue; }
+                    try {
+                        const file = await getFileByRelativePath(f.relPath);
+                        if (file) {
+                            f.url = URL.createObjectURL(file);
+                            f.file = file;
+                            matched++;
+                        }
+                    } catch (e) { /* skip */ }
+                    done++;
+                }
+            }
+            render();
+            updateStatus('✔ Relinked ' + matched + ' / ' + total);
+            toast('✔ Relinked ' + matched + ' of ' + total + ' file' + (total === 1 ? '' : 's'));
+        }
+
+        // ============================================================
+        // SAVE / LOAD
+        // ============================================================
+        const MAGIC_STR = 'ESCR7';
+        const XOR_KEY = [0x5A, 0x3C, 0x91, 0xE7, 0x42, 0x18, 0xBD, 0x6F, 0xA3, 0x55, 0xEE, 0x11, 0xC7, 0x7F, 0x2D, 0x88];
+        const FILE_EXT = '.lgt';
+        const DEFAULT_FILENAME = 'project1';
+
+        function obfuscate(text) {
+            const utf8 = new TextEncoder().encode(text);
+            const out = new Uint8Array(utf8.length);
+            for (let i = 0; i < utf8.length; i++) out[i] = utf8[i] ^ XOR_KEY[i % XOR_KEY.length];
+            let binary = '';
+            const CHUNK = 0x8000;
+            for (let i = 0; i < out.length; i += CHUNK) binary += String.fromCharCode.apply(null, out.subarray(i, i + CHUNK));
+            return btoa(binary);
+        }
+
+        function deobfuscate(b64) {
+            const binary = atob(b64);
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+            const out = new Uint8Array(bytes.length);
+            for (let i = 0; i < bytes.length; i++) out[i] = bytes[i] ^ XOR_KEY[i % XOR_KEY.length];
+            return new TextDecoder().decode(out);
+        }
+
+        function buildSaveString() {
+            const serialized = steps.map(s => ({
+                mode: s.mode,
+                files: s.files.map(f => ({
+                    name: f.name,
+                    relPath: f.relPath || '',
+                    filename: f.filename || ''
+                }))
+            }));
+            const json = JSON.stringify({
+                v: 7,
+                homeName: homeName || '',
+                steps: serialized,
+                fade: FADE_DURATION,
+                volume: VOLUME,
+                savedAt: new Date().toISOString()
+            });
+            return MAGIC_STR + obfuscate(json);
+        }
+
+        function applyLoadedText(text, onProgress) {
+            text = (text || '').trim();
+            if (!text.startsWith(MAGIC_STR)) throw new Error('Not a valid .lgt file (bad header)');
+            const b64 = text.slice(MAGIC_STR.length);
+            const json = deobfuscate(b64);
+            const obj = JSON.parse(json);
+            if (!obj.steps || !Array.isArray(obj.steps)) throw new Error('Invalid structure');
+
+            stopAll();
+
+            let total = 0;
+            for (const s of obj.steps) total += (s.files || []).length;
+            let done = 0;
+
+            const newSteps = [];
+            for (const s of obj.steps) {
+                const files = [];
+                for (const f of (s.files || [])) {
+                    files.push({
+                        name: f.name || 'unknown',
+                        relPath: f.relPath || '',
+                        filename: f.filename || (f.relPath ? f.relPath.split('/').pop() : '') || (f.name + '.mp3'),
+                        url: null,
+                        file: null
+                    });
+                    done++;
+                    if (onProgress) onProgress(done, total);
+                }
+                newSteps.push({ mode: s.mode === 'loop' ? 'loop' : 'sequence', files: files });
+            }
+
+            steps = newSteps;
+            if (typeof obj.fade === 'number' && obj.fade >= 0) {
+                FADE_DURATION = obj.fade;
+                fadeRange.value = FADE_DURATION;
+                fadeValue.textContent = (FADE_DURATION / 1000).toFixed(1) + 's';
+            }
+            if (typeof obj.volume === 'number' && obj.volume >= 0 && obj.volume <= 1) {
+                setVolume(obj.volume);
+            }
+            render();
+            return { stepCount: steps.length, fileCount: done, savedHomeName: obj.homeName || '' };
+        }
+
+        // ============================================================
+        // RECONNECT WIZARD
+        // ============================================================
+        function openReconnectWizard() {
+            reconnectModal.classList.add('visible');
+            overlay.classList.add('visible');
+            renderWizard();
+        }
+
+        function closeReconnectWizard() {
+            reconnectModal.classList.remove('visible');
+            overlay.classList.remove('visible');
+        }
+
+        function renderWizard() {
+            const rows = [];
+            for (let si = 0; si < steps.length; si++) {
+                const s = steps[si];
+                for (let fi = 0; fi < s.files.length; fi++) {
+                    rows.push({ stepIdx: si, fileIdx: fi, file: s.files[fi] });
+                }
+            }
+            const total = rows.length;
+            const linked = rows.filter(r => r.file.url).length;
+            $('wizMatched').textContent = linked;
+            $('wizTotal').textContent = total;
+
+            const listEl = $('wizList');
+            listEl.innerHTML = '';
+            if (total === 0) {
+                listEl.innerHTML = '<div class="picker-empty">No files in this project.</div>';
+                return;
+            }
+            rows.forEach((q, i) => {
+                const row = document.createElement('div');
+                row.className = 'wizard-row';
+                if (q.file.url) row.classList.add('done');
+
+                const num = document.createElement('div');
+                num.className = 'wr-num';
+                num.textContent = (i + 1);
+
+                const info = document.createElement('div');
+                info.className = 'wr-info';
+                const fol = document.createElement('div');
+                fol.className = 'wr-folder';
+                const rel = q.file.relPath || '';
+                const slash = rel.lastIndexOf('/');
+                const folder = slash < 0 ? '(root)' : rel.slice(0, slash);
+                fol.textContent = '🏠 ' + folder;
+                const nm = document.createElement('div');
+                nm.className = 'wr-name';
+                nm.textContent = q.file.filename || q.file.name || '(unknown)';
+                info.appendChild(fol);
+                info.appendChild(nm);
+
+                const status = document.createElement('div');
+                status.className = 'wr-status';
+                status.textContent = q.file.url ? '✔ linked' : 'not linked';
+
+                row.appendChild(num);
+                row.appendChild(info);
+                row.appendChild(status);
+                listEl.appendChild(row);
+            });
+        }
+
+        // ============================================================
+        // SAVE / LOAD ACTIONS
+        // ============================================================
+        function sanitizeBaseName(name) {
+            if (!name) return '';
+            let n = String(name).replace(/\\/g, '/');
+            const slash = n.lastIndexOf('/');
+            if (slash >= 0) n = n.slice(slash + 1);
+            const dot = n.lastIndexOf('.');
+            if (dot > 0) n = n.slice(0, dot);
+            return n.trim();
+        }
+
+        async function doSave() {
+            try {
+                const payload = buildSaveString();
+                const base = sanitizeBaseName(lastFilename) || DEFAULT_FILENAME;
+                const suggested = base + FILE_EXT;
+
+                if (typeof window.showSaveFilePicker === 'function') {
+                    try {
+                        const handle = await window.showSaveFilePicker({
+                            suggestedName: suggested,
+                            types: [{ description: 'LogicTech project', accept: { 'application/octet-stream': [FILE_EXT] } }]
+                        });
+                        const w = await handle.createWritable();
+                        await w.write(payload);
+                        await w.close();
+                        if (handle.name) {
+                            lastFilename = sanitizeBaseName(handle.name) || base;
+                        }
+                        toast('✔ Saved: ' + (lastFilename + FILE_EXT));
+                        updateStatus('💾 Saved');
+                        return;
+                    } catch (err) {
+                        if (err.name === 'AbortError') { toast('Save cancelled'); return; }
+                        console.warn('picker failed, fallback', err);
+                    }
+                }
+
+                const blob = new Blob([payload], { type: 'application/octet-stream' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = suggested;
+                document.body.appendChild(a);
+                a.click();
+                setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(url); }, 2000);
+                lastFilename = base;
+                toast('💾 Saved: ' + suggested);
+                updateStatus('💾 Saved');
+            } catch (err) {
+                console.error(err);
+                toast('❌ Save failed: ' + err.message);
+            }
+        }
+
+        function loadFromFile(file) {
+            if (!file) return;
+            const base = sanitizeBaseName(file.name);
+            if (base) lastFilename = base;
+            const reader = new FileReader();
+            reader.onload = () => {
+                try {
+                    const result = applyLoadedText(reader.result);
+                    toast(`✔ Loaded ${result.stepCount} step(s) · ${result.fileCount} file(s)`);
+                    updateStatus('✔ Loaded — pick home folder');
+                    setTimeout(() => openReconnectWizard(), 400);
+                } catch (err) {
+                    console.error(err);
+                    toast('❌ Load failed: ' + err.message);
+                }
+            };
+            reader.onerror = () => toast('❌ File read error');
+            reader.readAsText(file);
+        }
+
+        function closeAllModals() {
+            [helpModal, reconnectModal, filePickerModal].forEach(m => m && m.classList.remove('visible'));
+            overlay.classList.remove('visible');
+        }
+
+        // ============================================================
+        // WIRE UP
+        // ============================================================
+        function init() {
+            if (volumeRange) volumeRange.addEventListener('input', () => setVolume(parseInt(volumeRange.value, 10) / 100));
+            if (volMuteBtn) volMuteBtn.addEventListener('click', toggleMute);
+            if (volIcon) volIcon.addEventListener('click', toggleMute);
+            updateVolumeUI();
+
+            fadeRange.addEventListener('input', () => {
+                FADE_DURATION = parseInt(fadeRange.value, 10);
+                fadeValue.textContent = (FADE_DURATION / 1000).toFixed(1) + 's';
+            });
+
+            $('homeSetBtn').addEventListener('click', pickHomeFolder);
+
+            playFromStartBtn.addEventListener('click', () => {
+                const idx = parseInt(startStepSelect.value, 10);
+                if (isNaN(idx) || idx < 0 || idx >= steps.length) { toast('⚠ Select a step'); return; }
+                if (steps[idx].files.length === 0) { toast('⚠ Step is empty'); return; }
+                playFileFromStep(idx, 0);
+            });
+
+            $('tool-add-step').addEventListener('click', () => {
+                steps.push({ files: [], mode: 'sequence' });
+                render();
+                toast('➕ Step added');
+            });
+
+            $('tool-play').addEventListener('click', () => {
+                const idx = parseInt(startStepSelect.value, 10);
+                if (isNaN(idx) || idx < 0 || idx >= steps.length) { toast('⚠ No step selected'); return; }
+                if (steps[idx].files.length === 0) { toast('⚠ Step is empty'); return; }
+                playFileFromStep(idx, 0);
+            });
+            $('tool-stop').addEventListener('click', stopAll);
+            $('tool-next-mp3').addEventListener('click', playNextMp3);
+            $('tool-next-step').addEventListener('click', playNextStep);
+
+            $('tool-save').addEventListener('click', doSave);
+
+            $('tool-load').addEventListener('click', () => projectInput.click());
+            projectInput.addEventListener('change', e => {
+                const f = e.target.files[0];
+                if (f) loadFromFile(f);
+                projectInput.value = '';
+            });
+
+            $('tool-reconnect').addEventListener('click', openReconnectWizard);
+
+            $('tool-clear').addEventListener('click', () => {
+                if (steps.length === 0) { toast('ℹ Already empty'); return; }
+                if (!confirm('Delete all steps and files?')) return;
+                stopAll();
+                steps = [];
+                render();
+                toast('🗑 Cleared');
+            });
+
+            $('helpBtn').addEventListener('click', () => {
+                helpModal.classList.add('visible');
+                overlay.classList.add('visible');
+            });
+            $('helpCloseBtn').addEventListener('click', closeAllModals);
+            overlay.addEventListener('click', closeAllModals);
+
+            $('pickerCancelBtn').addEventListener('click', closeFilePickerModal);
+            $('pickerAddBtn').addEventListener('click', confirmFilePicker);
+            $('pickerSelectAll').addEventListener('click', () => {
+                pickerFiles.forEach(f => f.checked = true);
+                renderPickerList();
+            });
+            $('pickerSelectNone').addEventListener('click', () => {
+                pickerFiles.forEach(f => f.checked = false);
+                renderPickerList();
+            });
+
+            $('wizPickHomeBtn').addEventListener('click', async () => {
+                await pickHomeFolder();
+                await relinkAllFromHomeWithProgress();
+                renderWizard();
+                if (steps.every(s => s.files.every(f => f.url))) {
+                    setTimeout(() => { closeReconnectWizard(); toast('✔ All files relinked'); }, 500);
+                }
+            });
+            $('wizCancelBtn').addEventListener('click', () => closeReconnectWizard());
+
+            window.addEventListener('keydown', e => {
+                if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+                if (e.key === 'Escape') closeAllModals();
+                else if (e.key === ' ' && !e.ctrlKey && !e.metaKey) {
+                    e.preventDefault();
+                    if (isPlaying) stopAll();
+                    else {
+                        const idx = parseInt(startStepSelect.value, 10);
+                        if (!isNaN(idx) && steps[idx] && steps[idx].files.length > 0) playFileFromStep(idx, 0);
+                    }
+                } else if (e.key === 'ArrowRight' && e.ctrlKey) { e.preventDefault(); playNextStep(); }
+                else if (e.key === 'ArrowRight') { e.preventDefault(); playNextMp3(); }
+                else if (e.key === 'F1') { e.preventDefault(); helpModal.classList.add('visible'); overlay.classList.add('visible'); }
+            });
+
+            render();
+            updateStatus('📐 Ready');
+            $('loadingOverlay').classList.add('hidden');
+
+            steps.push({ files: [], mode: 'sequence' });
+            render();
+        }
+
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+        else init();
+
+    })();
+    </script>
+</body>
+</html>
